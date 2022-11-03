@@ -92,7 +92,10 @@ pub fn execute_update_metadata(
             }
             None => Err(ContractError::NameNotFound {}),
         })?;
-    Ok(Response::new())
+    let event = Event::new("update-metadata")
+        .add_attribute("token_id", token_id)
+        .add_attribute("owner", info.sender);
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_associate_address(
@@ -138,7 +141,11 @@ pub fn execute_associate_address(
         REVERSE_MAP.remove(deps.storage, &Addr::unchecked(token_uri));
     }
 
-    Ok(Response::new())
+    let event = Event::new("associate-address")
+        .add_attribute("token_id", name)
+        .add_attribute("owner", sender);
+
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_mint(
@@ -166,11 +173,11 @@ pub fn execute_mint(
 
     Sg721NameContract::default().increment_tokens(deps.storage)?;
 
-    Ok(Response::new()
-        .add_attribute("action", "mint")
+    let event = Event::new("mint")
         .add_attribute("minter", info.sender)
-        .add_attribute("owner", msg.owner)
-        .add_attribute("token_id", msg.token_id))
+        .add_attribute("token_id", msg.token_id)
+        .add_attribute("owner", msg.owner);
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_burn(
@@ -211,10 +218,10 @@ pub fn execute_burn(
         Sg721NameContract::default().decrement_tokens(deps.storage)?;
     }
 
-    Ok(res
-        .add_attribute("action", "burn")
-        .add_attribute("sender", info.sender)
-        .add_attribute("token_id", token_id))
+    let event = Event::new("burn")
+        .add_attribute("token_id", token_id)
+        .add_attribute("owner", info.sender);
+    Ok(res.add_event(event))
 }
 
 pub fn execute_transfer_nft(
@@ -237,14 +244,12 @@ pub fn execute_transfer_nft(
     Ok(Response::new().add_message(update_ask_msg).add_event(event))
 }
 
-fn _transfer_nft(
-    deps: DepsMut,
-    env: Env,
-    info: &MessageInfo,
-    recipient: &Addr,
+// Update the ask on the marketplace
+fn update_ask_on_marketplace(
+    deps: Deps,
     token_id: &str,
+    recipient: Addr,
 ) -> Result<WasmMsg, ContractError> {
-    // Update the ask on the marketplace
     let msg = SgNameMarketplaceExecuteMsg::UpdateAsk {
         token_id: token_id.to_string(),
         seller: recipient.to_string(),
@@ -254,12 +259,15 @@ fn _transfer_nft(
         funds: vec![],
         msg: to_binary(&msg)?,
     };
+    Ok(update_ask_msg)
+}
 
+fn reset_token_metadata_and_reverse_map(deps: &mut DepsMut, token_id: &str) -> StdResult<()> {
     let mut token = Sg721NameContract::default()
         .tokens
         .load(deps.storage, token_id)?;
 
-    // Reset bio, profile, records
+    // Reset image, records
     token.extension = Metadata::default();
     Sg721NameContract::default()
         .tokens
@@ -274,18 +282,32 @@ fn _transfer_nft(
     Sg721NameContract::default()
         .tokens
         .save(deps.storage, token_id, &token)?;
+    Ok(())
+}
+
+fn _transfer_nft(
+    mut deps: DepsMut,
+    env: Env,
+    info: &MessageInfo,
+    recipient: &Addr,
+    token_id: &str,
+) -> Result<WasmMsg, ContractError> {
+    let update_ask_msg = update_ask_on_marketplace(deps.as_ref(), token_id, recipient.clone())?;
+
+    reset_token_metadata_and_reverse_map(&mut deps, token_id)?;
 
     let msg = Sg721ExecuteMsg::TransferNft {
         recipient: recipient.to_string(),
         token_id: token_id.to_string(),
     };
+
     Sg721NameContract::default().execute(deps, env, info.clone(), msg)?;
 
     Ok(update_ask_msg)
 }
 
 pub fn execute_send_nft(
-    deps: DepsMut,
+    mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
     contract: String,
@@ -293,42 +315,17 @@ pub fn execute_send_nft(
     msg: Binary,
 ) -> Result<Response, ContractError> {
     let contract_addr = deps.api.addr_validate(&contract)?;
-    // Update the ask on the marketplace
-    let update_msg = SgNameMarketplaceExecuteMsg::UpdateAsk {
-        token_id: token_id.to_string(),
-        seller: contract_addr.to_string(),
-    };
-    let update_ask_msg = WasmMsg::Execute {
-        contract_addr: NAME_MARKETPLACE.load(deps.storage)?.to_string(),
-        funds: vec![],
-        msg: to_binary(&update_msg)?,
-    };
+    let update_ask_msg =
+        update_ask_on_marketplace(deps.as_ref(), &token_id, contract_addr.clone())?;
 
-    let mut token = Sg721NameContract::default()
-        .tokens
-        .load(deps.storage, &token_id)?;
-
-    // Reset bio, profile, records
-    token.extension = Metadata::default();
-    Sg721NameContract::default()
-        .tokens
-        .save(deps.storage, &token_id, &token)?;
-
-    // remove reverse mapping and reset token_uri if exists
-    if let Some(token_uri) = token.clone().token_uri {
-        REVERSE_MAP.remove(deps.storage, &Addr::unchecked(token_uri));
-        token.token_uri = None;
-    }
-
-    Sg721NameContract::default()
-        .tokens
-        .save(deps.storage, &token_id, &token)?;
+    reset_token_metadata_and_reverse_map(&mut deps, &token_id)?;
 
     let msg = Sg721ExecuteMsg::SendNft {
         contract: contract_addr.to_string(),
         token_id: token_id.to_string(),
         msg,
     };
+
     Sg721NameContract::default().execute(deps, env, info.clone(), msg)?;
 
     let event = Event::new("send")
@@ -389,7 +386,7 @@ pub fn execute_add_text_record(
                         return Err(ContractError::RecordNameAlreadyExists {});
                     }
                 }
-                token_info.extension.records.push(record);
+                token_info.extension.records.push(record.clone());
                 // check record length
                 if token_info.extension.records.len() > max_record_count as usize {
                     return Err(ContractError::TooManyRecords {
@@ -400,7 +397,12 @@ pub fn execute_add_text_record(
             }
             None => Err(ContractError::NameNotFound {}),
         })?;
-    Ok(Response::new())
+
+    let event = Event::new("add-text-record")
+        .add_attribute("sender", info.sender)
+        .add_attribute("name", token_id)
+        .add_attribute("record", record.name);
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_remove_text_record(
@@ -426,7 +428,12 @@ pub fn execute_remove_text_record(
             }
             None => Err(ContractError::NameNotFound {}),
         })?;
-    Ok(Response::new())
+
+    let event = Event::new("remove-text-record")
+        .add_attribute("sender", info.sender)
+        .add_attribute("name", token_id)
+        .add_attribute("record", record_name);
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_update_text_record(
@@ -452,12 +459,17 @@ pub fn execute_update_text_record(
                     .extension
                     .records
                     .retain(|r| r.name != record.name);
-                token_info.extension.records.push(record);
+                token_info.extension.records.push(record.clone());
                 Ok(token_info)
             }
             None => Err(ContractError::NameNotFound {}),
         })?;
-    Ok(Response::new())
+
+    let event = Event::new("update-text-record")
+        .add_attribute("sender", info.sender)
+        .add_attribute("name", token_id)
+        .add_attribute("record", record.name);
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_verify_text_record(
@@ -488,7 +500,13 @@ pub fn execute_verify_text_record(
             }
             None => Err(ContractError::NameNotFound {}),
         })?;
-    Ok(Response::new())
+
+    let event = Event::new("verify-text-record")
+        .add_attribute("sender", info.sender)
+        .add_attribute("name", token_id)
+        .add_attribute("record", record_name)
+        .add_attribute("result", result.to_string());
+    Ok(Response::new().add_event(event))
 }
 
 pub fn execute_set_name_marketplace(
@@ -505,7 +523,10 @@ pub fn execute_set_name_marketplace(
 
     NAME_MARKETPLACE.save(deps.storage, &deps.api.addr_validate(&address)?)?;
 
-    Ok(Response::new())
+    let event = Event::new("set-name-marketplace")
+        .add_attribute("sender", info.sender)
+        .add_attribute("address", address);
+    Ok(Response::new().add_event(event))
 }
 
 fn only_owner(deps: Deps, sender: &Addr, token_id: &str) -> Result<Addr, ContractError> {
