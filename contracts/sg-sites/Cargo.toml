@@ -1,0 +1,55 @@
+[package]
+name = "sg-sites"
+authors = [
+  "Josef Leventon <josef.leventon@gmail.com>",
+]
+version     = { workspace = true }
+edition     = { workspace = true }
+homepage    = { workspace = true }
+repository  = { workspace = true }
+license     = { workspace = true }
+
+exclude = [
+  # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
+  "artifacts/*",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# for more explicit tests, cargo test --features=backtraces
+backtraces = ["cosmwasm-std/backtraces"]
+# use library feature to disable all instantiate/execute/query exports
+library = []
+
+[dependencies]
+cosmwasm-schema = { workspace = true }
+cosmwasm-std = { workspace = true }
+cw-controllers = { workspace = true }
+cw-storage-plus = { workspace = true }
+cw-utils = { workspace = true }
+cw2 = { workspace = true }
+schemars = { workspace = true }
+serde = { workspace = true }
+sg-name = { path = "../../packages/sg-name" }
+sg-std = { workspace = true }
+sg721 = { workspace = true }
+sg721-base = {  workspace = true, features = ["library"] }
+sg721-name = { path = "../sg721-name" }
+thiserror = { workspace = true }
+cw721 = { workspace = true }
+cw721-base = { workspace = true, features = ["library"] }
+sg-name-minter = { path = "../../packages/sg-name-minter" }
+sg-name-market = { path = "../../packages/sg-name-market" }
+sg-sites-layout = { path = "../../packages/sg-sites-layout" }
+sg-sites-common = { path = "../../packages/sg-sites-common" }
+subtle-encoding = { version = "0.5.1", features = ["bech32-preview"] }
+name-minter = { path = "../name-minter" }
+name-marketplace = { path = "../marketplace" }
+
+[dev-dependencies]
+cw-multi-test = { version = "0.16.0" }
+sg-multi-test = { version = "0.21.1" }
