@@ -851,6 +851,60 @@ dependencies = [
 ]
 
 [[package]]
+name = "sg-sites"
+version = "0.12.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-controllers",
+ "cw-multi-test",
+ "cw-storage-plus",
+ "cw-utils",
+ "cw2",
+ "cw721",
+ "cw721-base",
+ "name-marketplace",
+ "name-minter",
+ "schemars",
+ "serde",
+ "sg-multi-test",
+ "sg-name",
+ "sg-name-market",
+ "sg-name-minter",
+ "sg-sites-common",
+ "sg-sites-layout",
+ "sg-std",
+ "sg721",
+ "sg721-base",
+ "sg721-name",
+ "subtle-encoding",
+ "thiserror",
+]
+
+[[package]]
+name = "sg-sites-common"
+version = "0.12.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+ "sg-std",
+ "sg1",
+]
+
+[[package]]
+name = "sg-sites-layout"
+version = "0.12.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+ "sg-name",
+]
+
+[[package]]
 name = "sg-std"
 version = "0.21.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
