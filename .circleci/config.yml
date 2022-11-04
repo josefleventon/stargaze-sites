@@ -6,6 +6,7 @@ workflows:
       - contract_marketplace
       - contract_name-minter
       - contract_sg721-name
+      - contract_sg-sites
       - package_sg-name
       - lint
       - wasm-build
@@ -91,7 +92,43 @@ jobs:
             - target
           key: cargocache-name-minter-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
 
-  contract_sg721-name:
+  contract_sg-sites:
+    docker:
+      - image: rust:1.64.0
+    working_directory: ~/project/contracts/sg-sites
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Version information
+          command: rustc --version; cargo --version; rustup --version
+      - restore_cache:
+          keys:
+            - cargocache-sg721-name-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
+      - run:
+          name: Unit Tests
+          environment:
+            RUST_BACKTRACE: 1
+          command: cargo unit-test --locked
+      - run:
+          name: Build and run schema generator
+          command: cargo schema --locked
+      - run:
+          name: Ensure checked-in schemas are up-to-date
+          command: |
+            CHANGES_IN_REPO=$(git status --porcelain)
+            if [[ -n "$CHANGES_IN_REPO" ]]; then
+              echo "Repository is dirty. Showing 'git status' and 'git --no-pager diff' for debugging now:"
+              git status && git --no-pager diff
+              exit 1
+            fi
+      - save_cache:
+          paths:
+            - /usr/local/cargo/registry
+            - target
+          key: cargocache-sg721-name-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
+
+    contract_sg721-name:
     docker:
       - image: rust:1.64.0
     working_directory: ~/project/contracts/sg721-name
@@ -126,6 +163,7 @@ jobs:
             - /usr/local/cargo/registry
             - target
           key: cargocache-sg721-name-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
+
 
   package_sg-name:
     docker:
