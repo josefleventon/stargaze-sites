@@ -5,5 +5,5 @@ All source code, apart from the following directories, was developed by the Star
 ```
 - packages/sg-sites-common
 - packages/sg-sites-layout
-- packages/sg-sites
+- contracts/sg-sites
 ```
