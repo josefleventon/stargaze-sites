@@ -128,7 +128,7 @@ jobs:
             - target
           key: cargocache-sg-sites-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
 
-    contract_sg721-name:
+  contract_sg721-name:
     docker:
       - image: rust:1.64.0
     working_directory: ~/project/contracts/sg721-name
@@ -163,7 +163,6 @@ jobs:
             - /usr/local/cargo/registry
             - target
           key: cargocache-sg721-name-rust:1.64.0-{{ checksum "~/project/Cargo.lock" }}
-
 
   package_sg-name:
     docker:
