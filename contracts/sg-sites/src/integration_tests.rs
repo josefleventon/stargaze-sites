@@ -173,7 +173,7 @@ fn setup_contract() -> StargazeApp {
             public_mint_start_time: mock_env().block.time,
         },
     };
-    let res = router.execute_contract(admin.clone(), name_minter_addr.clone(), &msg, &[]);
+    let res = router.execute_contract(admin.clone(), name_minter_addr, &msg, &[]);
     assert!(res.is_ok());
 
     // Give approval to marketplace
@@ -181,12 +181,7 @@ fn setup_contract() -> StargazeApp {
         operator: name_marketplace_addr.to_string(),
         expires: None,
     };
-    let res = router.execute_contract(
-        admin.clone(),
-        sg721_name_addr.clone(),
-        &approve_all_msg,
-        &[],
-    );
+    let res = router.execute_contract(admin, sg721_name_addr, &approve_all_msg, &[]);
     assert!(res.is_ok());
 
     router
@@ -265,7 +260,7 @@ pub fn try_create_site() {
     };
 
     let res = router.execute_contract(
-        admin.clone(),
+        admin,
         Addr::unchecked(SITES),
         &create_site_msg,
         &[coin(50, "ustars")],
@@ -329,7 +324,7 @@ pub fn try_update_info() {
         bio: Some(String::from("My name Jeff")),
     };
 
-    let res = router.execute_contract(admin.clone(), Addr::unchecked(SITES), &update_info_msg, &[]);
+    let res = router.execute_contract(admin, Addr::unchecked(SITES), &update_info_msg, &[]);
 
     assert!(res.is_ok());
 }
@@ -449,12 +444,7 @@ pub fn try_update_layout() {
 
     let update_layout_msg = ExecuteMsg::UpdateLayout { layout };
 
-    let res = router.execute_contract(
-        admin.clone(),
-        Addr::unchecked(SITES),
-        &update_layout_msg,
-        &[],
-    );
+    let res = router.execute_contract(admin, Addr::unchecked(SITES), &update_layout_msg, &[]);
 
     assert!(res.is_ok());
 }
