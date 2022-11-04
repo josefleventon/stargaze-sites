@@ -26,8 +26,11 @@ pub mod entry {
     };
 
     use super::*;
-    use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, StdResult};
+    use cosmwasm_std::{
+        to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, StdError, StdResult,
+    };
     use cw_utils::nonpayable;
+    use semver::Version;
     use sg_std::Response;
 
     #[cfg_attr(not(feature = "library"), entry_point)]
@@ -77,5 +80,29 @@ pub mod entry {
             QueryMsg::Site { address } => to_binary(&query_site(deps, address)?),
             QueryMsg::Params {} => to_binary(&query_params(deps)?),
         }
+    }
+
+    #[cfg_attr(not(feature = "library"), entry_point)]
+    pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
+        let ver = cw2::get_contract_version(deps.storage)?;
+        // ensure we are migrating from an allowed contract
+        if ver.contract != CONTRACT_NAME {
+            return Err(StdError::generic_err("Can only upgrade from same type").into());
+        }
+
+        // use semver
+        let version = Version::parse(&ver.version).unwrap();
+        let contract_version = Version::parse(CONTRACT_VERSION).unwrap();
+
+        if version.ge(&contract_version) {
+            return Err(StdError::generic_err("Cannot upgrade from a newer version").into());
+        }
+
+        // set the new version
+        cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+        // do any desired state migrations...
+
+        Ok(Response::default())
     }
 }
