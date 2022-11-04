@@ -7,23 +7,38 @@
 import * as _0 from "./NameMarketplace.types";
 import * as _1 from "./NameMarketplace.client";
 import * as _2 from "./NameMarketplace.message-composer";
-import * as _3 from "./NameMinter.types";
-import * as _4 from "./NameMinter.client";
-import * as _5 from "./NameMinter.message-composer";
-import * as _6 from "./Sg721Name.types";
-import * as _7 from "./Sg721Name.client";
-import * as _8 from "./Sg721Name.message-composer";
+import * as _3 from "./NameMarketplace.recoil";
+import * as _4 from "./NameMinter.types";
+import * as _5 from "./NameMinter.client";
+import * as _6 from "./NameMinter.message-composer";
+import * as _7 from "./NameMinter.recoil";
+import * as _8 from "./Sg721Name.types";
+import * as _9 from "./Sg721Name.client";
+import * as _10 from "./Sg721Name.message-composer";
+import * as _11 from "./Sg721Name.recoil";
+import * as _12 from "./Sites.types";
+import * as _13 from "./Sites.client";
+import * as _14 from "./Sites.message-composer";
+import * as _15 from "./Sites.recoil";
 export namespace contracts {
   export const NameMarketplace = { ..._0,
     ..._1,
-    ..._2
+    ..._2,
+    ..._3
   };
-  export const NameMinter = { ..._3,
-    ..._4,
-    ..._5
+  export const NameMinter = { ..._4,
+    ..._5,
+    ..._6,
+    ..._7
   };
-  export const Sg721Name = { ..._6,
-    ..._7,
-    ..._8
+  export const Sg721Name = { ..._8,
+    ..._9,
+    ..._10,
+    ..._11
+  };
+  export const Sites = { ..._12,
+    ..._13,
+    ..._14,
+    ..._15
   };
 }

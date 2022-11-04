@@ -1,27 +1,31 @@
-import codegen from "@cosmwasm/ts-codegen";
+import codegen from '@cosmwasm/ts-codegen'
 
 codegen({
   contracts: [
     {
-      name: "NameMarketplace",
-      dir: "../contracts/marketplace/schema",
+      name: 'NameMarketplace',
+      dir: '../contracts/marketplace/schema',
     },
     {
-      name: "NameMinter",
-      dir: "../contracts/name-minter/schema",
+      name: 'NameMinter',
+      dir: '../contracts/name-minter/schema',
     },
     {
-      name: "Sg721Name",
-      dir: "../contracts/sg721-name/schema",
+      name: 'Sg721Name',
+      dir: '../contracts/sg721-name/schema',
+    },
+    {
+      name: 'Sites',
+      dir: '../contracts/sg-sites/schema',
     },
   ],
-  outPath: "./src/",
+  outPath: './src/',
 
   // options are completely optional ;)
   options: {
     bundle: {
-      bundleFile: "index.ts",
-      scope: "contracts",
+      bundleFile: 'index.ts',
+      scope: 'contracts',
     },
     types: {
       enabled: true,
@@ -32,17 +36,17 @@ codegen({
     reactQuery: {
       enabled: false,
       optionalClient: true,
-      version: "v4",
+      version: 'v4',
       mutations: true,
       queryKeys: true,
     },
     recoil: {
-      enabled: false,
+      enabled: true,
     },
     messageComposer: {
       enabled: true,
     },
   },
 }).then(() => {
-  console.log("✨ all done!");
-});
+  console.log('✨ all done!')
+})
