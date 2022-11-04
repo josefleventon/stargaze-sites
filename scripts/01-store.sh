@@ -1,4 +1,4 @@
-curl -s https://api.github.com/repos/public-awesome/names/releases/latest \
+curl -s https://api.github.com/repos/josefleventon/stargaze-sites/releases/latest \
 | grep ".*wasm" \
 | cut -d : -f 2,3 \
 | tr -d \" \
@@ -21,5 +21,9 @@ starsd tx wasm store sg721_name.wasm --from $TESTNET_KEY \
     --gas auto -y -b block -o json | jq '.logs' | grep -A 1 code_id
 
 starsd tx wasm store whitelist_updatable.wasm --from $TESTNET_KEY \
+    --gas-prices 0.025ustars --gas-adjustment 1.7 \
+    --gas auto -y -b block -o json | jq '.logs' | grep -A 1 code_id
+
+starsd tx wasm store sg_sites.wasm --from $TESTNET_KEY \
     --gas-prices 0.025ustars --gas-adjustment 1.7 \
     --gas auto -y -b block -o json | jq '.logs' | grep -A 1 code_id

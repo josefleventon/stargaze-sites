@@ -54,6 +54,12 @@ Verify it was setup correctly with:
 
 You should see the minter and collection addresses.
 
+### Step 5: Instantiate Sites
+
+```sh
+./08-init_sites.sh
+```
+
 ## Profit!
 
 ### Execute a mint
@@ -78,6 +84,12 @@ Query name metadata:
 
 ```sh
 ./query_metadata.sh [name]
+```
+
+### Create a site
+
+```sh
+./exec_create_site.sh [username]
 ```
 
 ### Place a bid
