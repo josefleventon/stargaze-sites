@@ -20,14 +20,18 @@ pub type QueryMsg = crate::msg::QueryMsg;
 
 pub mod entry {
     use crate::{
-        contract::{execute_create_site, query_params, query_site},
+        contract::{
+            execute_create_site, execute_update_info, execute_update_layout, query_params,
+            query_site,
+        },
         msg::{ExecuteMsg, InstantiateMsg},
         sudo::sudo_update_params,
     };
 
     use super::*;
     use cosmwasm_std::{
-        to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, StdError, StdResult,
+        to_binary, Binary, Decimal, Deps, DepsMut, Empty, Env, MessageInfo, StdError, StdResult,
+        Uint128,
     };
     use cw_utils::nonpayable;
     use semver::Version;
@@ -50,7 +54,7 @@ pub mod entry {
             deps,
             msg.site_creation_fee,
             msg.fee_account,
-            msg.fair_burn_percent,
+            Decimal::percent(msg.fair_burn_bps) / Uint128::from(100u128),
             msg.sg721_name_contract_addr,
         )?;
 
@@ -70,7 +74,13 @@ pub mod entry {
     ) -> Result<Response, ContractError> {
         match msg {
             ExecuteMsg::CreateSite { name } => execute_create_site(deps, info, name),
-            _ => Ok(Response::new()),
+            ExecuteMsg::UpdateInfo {
+                profile_picture,
+                profile_banner,
+                name,
+                bio,
+            } => execute_update_info(deps, info, profile_picture, profile_banner, name, bio),
+            ExecuteMsg::UpdateLayout { layout } => execute_update_layout(deps, info, layout),
         }
     }
 

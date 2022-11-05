@@ -9,7 +9,7 @@ use crate::state::{Row, Site};
 pub struct InstantiateMsg {
     pub site_creation_fee: Uint128,
     pub fee_account: String,
-    pub fair_burn_percent: Decimal,
+    pub fair_burn_bps: u64,
     pub sg721_name_contract_addr: String,
 }
 

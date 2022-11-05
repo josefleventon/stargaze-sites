@@ -2,7 +2,7 @@
 
 use std::vec;
 
-use cosmwasm_std::{coin, coins, testing::mock_env, Addr, Decimal, Uint128};
+use cosmwasm_std::{coin, coins, testing::mock_env, Addr, Uint128};
 use cw_multi_test::{BankSudo, Contract, ContractWrapper, Executor};
 use sg_multi_test::StargazeApp;
 use sg_name::NFT;
@@ -158,7 +158,7 @@ fn setup_contract() -> StargazeApp {
             &InstantiateMsg {
                 site_creation_fee: Uint128::from(50u128), // 50 ustars
                 fee_account: FEE_ACCOUNT.to_string(),
-                fair_burn_percent: Decimal::percent(10u64),
+                fair_burn_bps: 1000u64,
                 sg721_name_contract_addr: sg721_name_addr.to_string(),
             },
             &[],
