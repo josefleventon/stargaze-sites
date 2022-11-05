@@ -1,9 +1,9 @@
 MSG=$(cat <<EOF
 {
   "site_creation_fee": "100000000",
-  "fee_account": "$TESTNET_FEE_KEY",
-  "fair_burn_percent": 10,
-  "sg721_name_contract_addr": "$COLLECTION",
+  "fee_account": $(starsd keys show $TESTNET_FEE_KEY | jq '.address'),
+  "fair_burn_bps": 1000,
+  "sg721_name_contract_addr": "$COLLECTION"
 }
 EOF
 )

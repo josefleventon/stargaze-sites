@@ -1,3 +1,5 @@
+find . -name "*.wasm" -type f|xargs rm -f
+
 curl -s https://api.github.com/repos/josefleventon/stargaze-sites/releases/latest \
 | grep ".*wasm" \
 | cut -d : -f 2,3 \

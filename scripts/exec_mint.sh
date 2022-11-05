@@ -22,7 +22,7 @@ EOF
 )
 
 starsd tx wasm execute $MINTER "$MSG" \
-  --amount 1000000000ustars \
+  --amount 100000000ustars \
   --gas-prices 0.025ustars --gas auto --gas-adjustment 1.9 \
   --from $TESTNET_KEY -b block -y -o json | jq .
  

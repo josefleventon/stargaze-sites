@@ -1,6 +1,8 @@
 MSG=$(cat <<EOF
 {
-  "params": {}
+  "site": {
+    "address": "$ADMIN"
+  }
 }
 EOF
 )
