@@ -1,7 +1,6 @@
 use cosmwasm_schema::write_api;
 
-use sg721::InstantiateMsg;
-use sg_sites::msg::{ExecuteMsg, QueryMsg};
+use sg_sites::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {
